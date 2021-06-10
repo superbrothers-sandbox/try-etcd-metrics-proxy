@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: etcd-metrics-proxy
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: etcd-metrics-proxy
+  template:
+    metadata:
+      labels:
+        name: etcd-metrics-proxy
+    spec:
+      hostNetwork: true
+      serviceAccountName: etcd-metrics-proxy
+      securityContext:
+        runAsUser: 65532
+      nodeSelector:
+        # node-role.kubernetes.io/control-plane: ""
+        node-role.kubernetes.io/master: ""
+      containers:
+      - name: kube-rbac-proxy
+        image: quay.io/brancz/kube-rbac-proxy:v0.10.0
+        args:
+        - --secure-listen-address=0.0.0.0:12381
+        - --upstream=http://127.0.0.1:2381
+        - --alsologtostderr
+        - -v=10
+        ports:
+        - containerPort: 12381
+          name: https
+        resources:
+          requests:
+            cpu: 50m
+            memory: 40Mi
+          limits:
+            memory: 100Mi
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule

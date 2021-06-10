@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: etcd
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: etcd-metrics-proxy
+  endpoints:
+  - port: https
+    scheme: https
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    honorLabels: true
+    tlsConfig:
+      insecureSkipVerify: true
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_endpoint_node_name]
+      replacement: etcd-$1
+      targetLabel: pod

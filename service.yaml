@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-metrics-proxy
+  namespace: kube-system
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 12381
+    name: https
+  selector:
+    name: etcd-metrics-proxy
